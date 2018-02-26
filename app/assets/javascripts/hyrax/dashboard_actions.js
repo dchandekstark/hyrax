@@ -32,4 +32,16 @@ Blacklight.onLoad(function() {
     return false;
   });
 
+  // Transition between time periods or object type
+  $('.admin-repo-charts').on('click', function(e) {
+    e.preventDefault();
+
+    var type_id = e.target.id;
+    var field = $('#' + type_id);
+    var clicked_chart = field.parents().filter('ul').attr('id');
+
+    $('#' + clicked_chart + ' a').removeClass('stats-selected');
+    field.addClass('stats-selected');
+  });
+
 });
