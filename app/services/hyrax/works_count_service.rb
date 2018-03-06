@@ -2,7 +2,7 @@ module Hyrax
   # Returns Works that the current user has permission to use.
   class WorksCountService < CountService
     SearchResultForWorkCount = Struct.new(:work_name, :updated, :work_views, :work_type, :visibility)
-
+    
     # Returns list of works
     # @param [Symbol] access :read or :edit
     # @return [Array<Hyrax::WorksCountService::SearchResultForWorkCount>] a list with documents
