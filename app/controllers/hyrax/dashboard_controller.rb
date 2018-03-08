@@ -11,7 +11,6 @@ module Hyrax
         @presenter = Hyrax::Admin::DashboardPresenter.new
         @admin_set_rows = Hyrax::AdminSetService.new(self, Hyrax::AdminSetSearchBuilder).search_results_with_work_count(:read)
         @collection_rows = Hyrax::CollectionsCountService.new(self, Hyrax::AdminSetSearchBuilder, ::Collection).search_results_with_work_count(:read)
-        @work_rows = Hyrax::WorksCountService.new(self, Hyrax::WorksSearchBuilder).search_results_with_work_count(:read)
         render 'show_admin'
       else
         @presenter = Dashboard::UserPresenter.new(current_user, view_context, params[:since])
@@ -37,6 +36,13 @@ module Hyrax
       return unless can? :read, :admin_dashboard
       @presenter = Hyrax::Admin::RepositoryObjectPresenter.new(params[:type_value])
       render json: @presenter
+    end
+
+    def update_works_list
+      if can? :read, :admin_dashboard
+        @work_rows = Hyrax::WorksCountService.new(self, Hyrax::WorksSearchBuilder, nil, params).search_results_with_work_count(:read)
+        render json: @work_rows
+      end
     end
   end
 end

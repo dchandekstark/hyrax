@@ -112,6 +112,7 @@ Hyrax::Engine.routes.draw do
       get 'update_collections', action: :update_collections, as: :update_collections
       get 'repository_growth', action: :repository_growth
       get 'repository_object_counts', action: :repository_object_counts
+      get 'update_works_list', action: :update_works_list
 
       resources :transfers, only: [:index, :destroy] do
         member do

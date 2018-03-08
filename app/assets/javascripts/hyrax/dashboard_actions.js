@@ -32,9 +32,16 @@ Blacklight.onLoad(function() {
     return false;
   });
 
-  // Create sortable, searchable table
+  // Create sortable, searchable tables
   $('#analytics-collections-table').DataTable();
   $('#analytics-works-table').DataTable();
+
+  // Generally there will be way too many works to show them in one go
+  $('#analytics-works-table').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: '/dashboard/update_works_list'
+  });
 
   // Transition between time periods or object type
   $('.admin-repo-charts').on('click', function(e) {
