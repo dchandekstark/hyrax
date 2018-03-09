@@ -1,11 +1,10 @@
 module Hyrax
   # Returns Works that the current user has permission to use.
   class WorksCountService < CountService
-    def initialize(context, search_builder, model, params)
-      super(context, search_builder, model)
+    def initialize(context, params)
+      super(context)
 
       @params = params
-      @draw = 0
     end
 
     # Returns list of works
@@ -15,27 +14,25 @@ module Hyrax
       works = search_results(access)
       results = []
 
-      works.each do |work|
+      works.documents.each do |work|
         created_date = DateTime.parse(work['system_create_dtsi']).in_time_zone.strftime("%Y-%m-%d")
         results << [work.title, created_date, 0, work['human_readable_type_tesim'][0], work['visibility_ssi']]
       end
 
-      { draw: @draw += 1,
-        recordsTotal: works.length,
-        recordsFiltered: 2,
+      { draw: @params[:draw],
+        recordsTotal: works['response']['numFound'],
+        recordsFiltered: works.documents.length,
         data: results }
+    end
+
+    def search_results(access)
+      context.repository.search(builder(access))
     end
 
     private
 
       def builder(_)
-        sort_ordering = if @draw.zero?
-                          'desc'
-                        else
-                          @params[:order][0]['dir']
-                        end
-
-        search_builder.new(context)
+        search_builder.new(context, @params)
                       .start(@params[:start])
                       .rows(@params[:length])
       end

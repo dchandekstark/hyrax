@@ -21,7 +21,7 @@ module Hyrax
 
       # @param [Symbol] access :read or :edit
       def builder(access)
-        search_builder.new(context, access, @model).rows(100)
+        search_builder.new(@context, access, @model).rows(100)
       end
   end
 end
