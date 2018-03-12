@@ -1,9 +1,10 @@
 module Hyrax
   # Returns Works that the current user has permission to use.
   class WorksCountService < CountService
-    def initialize(context, params)
+    def initialize(context, search_builder, params)
       super(context)
 
+      @search_builder = search_builder
       @params = params
     end
 
