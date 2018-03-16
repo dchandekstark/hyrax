@@ -10,6 +10,12 @@ RSpec.describe "The homepage" do
     expect(page).to have_link "Work 1"
   end
 
+  it 'shows recently uploaded' do
+    visit root_path
+    click_link("Recently Uploaded")
+    expect(page).to have_link "Work 1"
+  end
+
   context "as an admin" do
     let(:user) { create(:admin) }
 
