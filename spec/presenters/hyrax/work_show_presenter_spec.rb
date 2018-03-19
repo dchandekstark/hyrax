@@ -11,7 +11,8 @@ RSpec.describe Hyrax::WorkShowPresenter do
       "date_created_tesim" => ['an unformatted date'],
       "depositor_tesim" => user_key }
   end
-  let(:ability) { nil }
+  let(:user) { create(:user) }
+  let(:ability) { Ability.new(user) }
   let(:presenter) { described_class.new(solr_document, ability, request) }
 
   subject { described_class.new(double, double) }
@@ -170,6 +171,7 @@ RSpec.describe Hyrax::WorkShowPresenter do
 
   describe '#tweeter' do
     let(:user) { instance_double(User, user_key: 'user_key') }
+    let(:ability) { nil }
 
     subject { presenter.tweeter }
 
@@ -202,7 +204,7 @@ RSpec.describe Hyrax::WorkShowPresenter do
   end
 
   describe "#member_presenters" do
-    let(:obj) { create(:work_with_file_and_work) }
+    let(:obj) { create(:work_with_file_and_work, user: user) }
     let(:attributes) { obj.to_solr }
 
     it "returns appropriate classes for each" do
@@ -213,7 +215,7 @@ RSpec.describe Hyrax::WorkShowPresenter do
   end
 
   describe "#file_set_presenters" do
-    let(:obj) { create(:work_with_ordered_files) }
+    let(:obj) { create(:work_with_ordered_files, user: user) }
     let(:attributes) { obj.to_solr }
 
     it "displays them in order" do
@@ -433,6 +435,59 @@ RSpec.describe Hyrax::WorkShowPresenter do
       it "returns an array of metadata values" do
         expect(subject[0]['label']).to eq('Title')
         expect(subject[0]['value']).to include('Test title', 'Another test title')
+      end
+    end
+  end
+
+  describe "display file set" do
+    context "the current user doesn't have read access" do
+      let(:obj) { create(:work_with_one_file) }
+      let(:attributes) { obj.to_solr }
+
+      it "won't include the file set" do
+        expect(presenter.file_set_presenters.size).to eq 0
+        expect(presenter.member_presenters.size).to eq 0
+      end
+    end
+
+    context "the current user has read access" do
+      let(:obj) { create(:work_with_one_file, user: user) }
+      let(:attributes) { obj.to_solr }
+
+      it "includes the file set" do
+        expect(presenter.file_set_presenters.size).to eq 1
+        expect(presenter.member_presenters.size).to eq 1
+      end
+    end
+  end
+
+  describe "display file sets" do
+    let(:obj) { create(:public_work, ordered_members: [file_set1, file_set2]) }
+    let(:attributes) { obj.to_solr }
+
+    context "when the current user does not have read access to all file sets" do
+      let(:file_set1) { create(:file_set, :public) }
+      let(:file_set2) { create(:file_set) }
+
+      it "does not include the private file set" do
+        expect(presenter.file_set_presenters.size).to eq 1
+        expect(presenter.file_set_presenters.map(&:id)).not_to include file_set2.id
+        expect(presenter.member_presenters.size).to eq 1
+        expect(presenter.member_presenters.map(&:id)).not_to include file_set2.id
+      end
+    end
+
+    context "when the current user has read access to all file sets" do
+      let(:file_set1) { create(:file_set, :public) }
+      let(:file_set2) { create(:file_set, user: user) }
+
+      it "includes all the file sets" do
+        expect(presenter.file_set_presenters.size).to eq 2
+        expect(presenter.file_set_presenters.map(&:id)).to include file_set1.id
+        expect(presenter.file_set_presenters.map(&:id)).to include file_set2.id
+        expect(presenter.member_presenters.size).to eq 2
+        expect(presenter.member_presenters.map(&:id)).to include file_set1.id
+        expect(presenter.member_presenters.map(&:id)).to include file_set2.id
       end
     end
   end

@@ -20,7 +20,7 @@ module Hyrax
     # @param [Array<String>] ids a list of ids to build presenters for
     # @param [Class] presenter_class the type of presenter to build
     # @return [Array<presenter_class>] presenters for the ordered_members (not filtered by class)
-    def member_presenters(ids = ordered_ids, presenter_class = composite_presenter_class)
+    def member_presenters(ids = ordered_ids - (file_set_ids - authorized_file_set_ids), presenter_class = composite_presenter_class)
       PresenterFactory.build_for(ids: ids,
                                  presenter_class: presenter_class,
                                  presenter_args: presenter_factory_arguments)
@@ -28,7 +28,7 @@ module Hyrax
 
     # @return [Array<FileSetPresenter>] presenters for the orderd_members that are FileSets
     def file_set_presenters
-      @file_set_presenters ||= member_presenters(ordered_ids & file_set_ids)
+      @file_set_presenters ||= member_presenters(ordered_ids & authorized_file_set_ids)
     end
 
     # @return [Array<WorkShowPresenter>] presenters for the ordered_members that are not FileSets
@@ -59,6 +59,11 @@ module Hyrax
                                                             fq: "{!join from=ordered_targets_ssim to=id}id:\"#{id}/list_source\"")
                                                      .flat_map { |x| x.fetch(ActiveFedora.id_field, []) }
                           end
+      end
+
+      # These are the file sets that belong to this work that the current user have access
+      def authorized_file_set_ids
+        @authorized_file_set_ids ||= Hyrax::MemberFilesService.run(@work, current_ability).map(&:id)
       end
 
       def presenter_factory_arguments

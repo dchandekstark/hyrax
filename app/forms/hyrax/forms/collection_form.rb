@@ -5,7 +5,7 @@ module Hyrax
       include HydraEditor::Form
       include HydraEditor::Form::Permissions
       # Used by the search builder
-      attr_reader :scope
+      attr_reader :scope, :current_ability
 
       delegate :id, :depositor, :permissions, :human_readable_type, :member_ids, :nestable?, to: :model
 
@@ -38,6 +38,7 @@ module Hyrax
       # @param repository [Blacklight::Solr::Repository] the solr repository
       def initialize(model, current_ability, repository)
         super(model)
+        @current_ability = current_ability
         @scope = ProxyScope.new(current_ability, repository, blacklight_config)
       end
 
@@ -148,7 +149,7 @@ module Hyrax
         def member_presenters(member_ids)
           PresenterFactory.build_for(ids: member_ids,
                                      presenter_class: WorkShowPresenter,
-                                     presenter_args: [nil])
+                                     presenter_args: [current_ability])
         end
     end
     # rubocop:enable ClassLength

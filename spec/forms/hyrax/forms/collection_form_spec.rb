@@ -25,7 +25,8 @@ RSpec.describe Hyrax::Forms::CollectionForm do
   end
 
   let(:collection) { build(:collection) }
-  let(:ability) { Ability.new(create(:user)) }
+  let(:user) { create(:user) }
+  let(:ability) { Ability.new(user) }
   let(:repository) { double }
   let(:form) { described_class.new(collection, ability, repository) }
 
@@ -160,7 +161,7 @@ RSpec.describe Hyrax::Forms::CollectionForm do
     end
 
     context 'with a work/file attached' do
-      let!(:work) { create(:work_with_one_file, :public, member_of_collections: [collection]) }
+      let!(:work) { create(:work_with_one_file, :public, member_of_collections: [collection], user: user) }
       let(:title) { work.file_sets.first.title.first }
       let(:file_id) { work.file_sets.first.id }
 

@@ -1,5 +1,6 @@
 RSpec.describe Hyrax::Forms::AdminSetForm do
-  let(:ability) { Ability.new(create(:user)) }
+  let(:user) { create(:user) }
+  let(:ability) { Ability.new(user) }
   let(:repository) { double }
   let(:form) { described_class.new(model, ability, repository) }
 
@@ -73,7 +74,7 @@ RSpec.describe Hyrax::Forms::AdminSetForm do
     end
 
     context 'with a work/file attached' do
-      let(:work) { create(:work_with_one_file) }
+      let(:work) { create(:work_with_one_file, user: user) }
       let(:title) { work.file_sets.first.title.first }
       let(:file_id) { work.file_sets.first.id }
       let(:model) do
